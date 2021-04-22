@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>再探模板语法</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        #login {
+            background: red;
+        }
+        #register {
+            background: blue;
+          }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>{{msg}}</h1>
+        <!--  v-once:该数据无法进行更新  -->
+        <h1 v-once>{{msg}}</h1>
+        <h1>{{htmlText}}</h1>
+        <!--  v-html可以将原生html进行展示  -->
+        <h1 v-html="htmlText"></h1>
+        <!-- 修改属性内容 -->
+        <div :id="idname">
+            <h1>登录</h1>
+        </div>
+        <!-- 模板语言的表达式应用 -->
+        <div>
+            {{firstname+lastname}}
+        </div>
+        <!-- 三元运算符的使用 -->
+        <div>
+            {{isVip?"会员用户":"普通用户"}}
+        </div>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                msg: 'HelloWorld',
+                htmlText: '<span>hello</span>',
+                idname: 'login',
+                firstname: '张',
+                lastname: '三',
+                isVip: true
+            }
+        })
+    </script>
+</body>
+</html>

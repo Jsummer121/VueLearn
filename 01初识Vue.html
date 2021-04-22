@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>初始Vue</title>
+    <!--  导入Vue  -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <!--  View视图部分  -->
+    <div id="app">
+        {{ $data.title }}<!--  使用模板变量  -->
+        <h1>{{ msg }}</h1>
+    </div>
+
+    <script>
+        // console.log(Vue) // 查看Vue
+        /**
+         * ƒ Vue (options) {
+            if (!(this instanceof Vue)
+            ) {
+                warn('Vue is a constructor and should be called with the `new` keyword');
+            }
+            this._init(options);
+            }
+         */
+
+        let app = new Vue({
+            el: '#app',
+            // Model模型部分
+            data: {
+                title: 'Hello Vue',
+                msg: 'This is my first day to use Vue'
+            }
+        })
+
+        // 输出app
+        console.log(app)
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>条件渲染v-show展示</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        #pane {
+            width: 200px;
+            height: 200px;
+            background: darkslateblue;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="pane" v-show="isShow">
+            HelloVue
+        </div>
+        <button @click="showPane">切换显示内容</button>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                isShow: true
+            },
+            methods: {
+                showPane: function () {
+                    app.isShow = !this.$data.isShow
+                }
+            }
+        })
+        /**
+         * v-if：第一次不显示时九直接不渲染，如果内容已经显示，将其改为不显示，内容被直接从DOM中去除
+         * v-show：不显示时就会改为display:none,但是会渲染在DOM上。
+         * 因此需要反复切换的内容，就推荐使用v-show。而只是渲染依次的内容用v-if
+         */
+    </script>
+</body>
+</html>

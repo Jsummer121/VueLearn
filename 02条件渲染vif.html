@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>条件渲染学习</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>用户名：{{ username1 }}</h1>
+        <h2>用户类型:<span v-if="VIP1">Vip</span><span v-else>非VIP</span></h2>
+        <h2>允许登录时间:
+            <span v-if="age1 < 14">5h</span>
+            <span v-else-if="age1 < 20">8h</span>
+            <span v-else>18h</span>
+        </h2>
+        <hr>
+        <h1>用户名：{{ username2 }}</h1>
+        <h2>用户类型:<span v-if="VIP2">Vip</span><span v-else>非VIP</span></h2>
+        <h2>允许登录时间:
+            <span v-if="age2 < 14">5h</span>
+            <span v-else-if="age2 < 20">8h</span>
+            <span v-else>18h</span>
+        </h2>
+        <hr>
+        <h1>用户名：{{ username3 }}</h1>
+        <h2>用户类型:<span v-if="VIP3">Vip</span><span v-else>非VIP</span></h2>
+        <h2>允许登录时间:
+            <span v-if="age3 < 14">5h</span>
+            <span v-else-if="age3 < 20">8h</span>
+            <span v-else>18h</span>
+        </h2>
+
+
+
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                username1: 'summer',
+                VIP1: true,
+                age1: 13,
+                username2: 'july',
+                VIP2: false,
+                age2: 17,
+                username3: 'april',
+                VIP3: true,
+                age3: 26,
+            }
+        })
+    </script>
+</body>
+</html>

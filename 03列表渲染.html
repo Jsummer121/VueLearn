@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>列表渲染</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h3>最基础的使用</h3>
+        <ul>
+            <li v-for="item in stars">
+                {{item}}
+            </li>
+        </ul>
+        <hr>
+        <h3>学生列表</h3>
+        <ul>
+            <li v-for="item in students">
+                <h4>姓名：{{item.name}}</h4>
+                <p>年龄：{{item.age}}---学校：{{item.school}}</p>
+            </li>
+        </ul>
+        <hr>
+        <h3>学生列表-带索引</h3>
+        <ul>
+            <li v-for="(item,index) in students">
+                <h4>第{{index+1}}个学生</h4>
+                <h4>姓名：{{item.name}}</h4>
+                <p>年龄：{{item.age}}---学校：{{item.school}}</p>
+            </li>
+        </ul>
+        <hr>
+        <h3>循环对象</h3>
+        <ul>
+            <li v-for="(stu,key) in students[0]">
+                key:{{key}}---{{stu}}
+            </li>
+        </ul>
+        <hr>
+        <h3>条件与循环混合使用(将偶数年龄的学生进行渲染)</h3>
+        <ol>
+            <li v-for="(stu,index) in students" v-if="stu.age%2===0" :key="index">
+                <h4>先循环，再判断：{{index}}</h4>
+                <h4>姓名：{{stu.name}}</h4>
+                <p>年龄：{{stu.age}}---学校：{{stu.school}}</p>
+            </li>
+        </ol>
+        <hr>
+        <h3>可复用元素的管理（key）</h3>
+        <div v-if="loginType === 'username'">
+        <label>Username</label>
+            <input placeholder="Enter your username">
+        </div>
+        <div v-else>
+            <label>Email</label>
+            <input placeholder="Enter your email address">
+        </div>
+        <!--   可以发现，此时，如果已经再input内输入内容，然后点击btn时，里面的内容并不会发生任何改变
+             为了修改这个，我们可以添加一个key再input内-->
+        <button @click="changePage">修改页面</button>
+        <br>
+        <template v-if="loginType === 'username'">
+            <label>Username</label>
+            <input placeholder="Enter your username" key="username">
+        </template>
+        <template v-else>
+            <label>Email</label>
+            <input placeholder="Enter your email address" key="email">
+        </template>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                stars: [
+                    '蔡徐坤',
+                    '鹿晗',
+                    '张杰',
+                    '周杰伦'
+                ],
+                students: [
+                    {
+                        name: '小明',
+                        age: 16,
+                        school: '清华',
+                        imgheader: 'www.tencent.com'
+                    },
+                    {
+                        name: '小黑',
+                        age: 20,
+                        school: '北大'
+                    },
+                    {
+                        name: '小红',
+                        age: 19,
+                        school: '浙大'
+                    },
+                    {
+                        name: '小蓝',
+                        age: 23,
+                        school: '复旦'
+                    }
+                ],
+                loginType: 'username'
+            },
+            methods:{
+                changePage: function () {
+                    if (app.loginType === 'username'){
+                        app.loginType = 'email'
+                    } else {
+                        app.loginType = 'username'
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+</html>

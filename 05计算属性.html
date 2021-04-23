@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>计算属性</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+<!--        一般情况下的写法-->
+        <h1>{{firstname+lastname}}</h1>
+<!--        计算属性-->
+        <h1>{{fullname}}</h1>
+<!--        显示一个单词的逆序-->
+        <h1>{{word.split("").reverse().join("")}}</h1>
+        <h1>{{reverseWord}}</h1>
+        <h1>循环偶数的年龄</h1>
+        <ul>
+            <li v-for="(item,index) in oddstudent">
+                <h3>{{item.name}}</h3>
+                <h4>{{item.age}}----{{item.school}}</h4>
+            </li>
+        </ul>
+        <div>
+            优点：如果需要轮询一个巨大的数据，并且不知一次的调用的时候，使用计算属性可以大量的降低性能消耗
+            因为计算属性可以进行缓存，我们只需要调用一次就可以无数次的进行获取，而如果正常的写的话，每调用一次就需要
+            执行轮询一次这样是非常消耗资源的。与之前说的v-if和v-show类似。
+        </div>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                firstname: '张',
+                lastname: '三',
+                word: 'music',
+                students: [
+                    {
+                        name: '小明',
+                        age: 16,
+                        school: '清华',
+                        imgheader: 'www.tencent.com'
+                    },
+                    {
+                        name: '小黑',
+                        age: 20,
+                        school: '北大'
+                    },
+                    {
+                        name: '小红',
+                        age: 19,
+                        school: '浙大'
+                    },
+                    {
+                        name: '小蓝',
+                        age: 23,
+                        school: '复旦'
+                    }
+                ]
+            },
+            computed: {
+                fullname: function () {
+                    // 会将计算结果进行缓存，只要this.first回合this.lastnamne变量的内容不改变，则不会更改
+                    // 如果两个变量修改了，这里也会随之更新
+                    return this.firstname + this.lastname
+                },
+                reverseWord: function () {
+                    return this.word.split("").reverse().join("")
+                },
+                oddstudent: function () {
+                    let result = this.students.filter((item, i)=>{
+                        return item.age%2==0
+                    })
+                    return result
+                }
+            }
+        })
+    </script>
+
+</body>
+</html>

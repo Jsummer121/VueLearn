@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Class与Style绑定</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        .page{
+            width: 300px;
+            height: 300px;
+            background: skyblue;
+        }
+        .active {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+<!--        最原始操作-->
+        <div class="page"></div>
+        <hr>
+<!--        通过对象的方式决定是否存在-->
+        <div class="page" :class="{active:isTrue}"></div>
+        <hr>
+<!--        直接放置对象-->
+        <div :class="styleObj"></div>
+        <hr>
+<!--        放置数组-->
+        <div :class="styleArr"></div>
+        <hr>
+<!--        放置字符串-->
+        <div :class="styleStr"></div>
+        <hr>
+<!--        数组和对象混合使用-->
+        <div :class="styleArrObj"></div>
+        <hr>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                isTrue: false,
+                styleObj: {page: true, "summer": true, 'col-lg-6': true},
+                styleArr: ['page', 'clo-lg-6', 'summer', 'hello'],
+                styleStr: 'page summer awqa 1241',
+                styleArrObj: ['page', 'summer', {active: false}]
+            }
+        })
+    </script>
+</body>
+</html>

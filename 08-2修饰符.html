@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修饰符</title>
+    <script src="js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="btnParent" @click="clickParent">
+            <button @click="clickEvent">按钮</button>
+<!--            阻止向上冒泡，使用stop修饰符-->
+            <button @click.stop="clickEvent2">stop按钮</button>
+        </div>
+
+        <hr>
+        <form action="post">
+<!--            绑定输入框回车事件-->
+            <input type="text" @keydown.enter="searchWeather" name="username" value="" v-model="city">
+<!--            prevent阻止默认的事件提交-->
+            <input type="submit" value="提交" @click.prevent="searchWeather">
+        </form>
+        <div id="weather">
+            <h2>气温：{{temp}}</h2>
+            <h2>描述：{{biref}}</h2>
+        </div>
+
+        <hr>
+<!--        once只触发一次-->
+        <button @click.once="onceEvent">只触发一次按钮</button>
+
+        <hr>
+        <button @click.ctrl="ctrlEvent">ctrl事件</button>
+        <button @click.ctrl.exact="ctrlEvent">ctrl精确事件</button>
+    </div>
+
+    <script>
+        // 配置额外的按键修饰符
+        Vue.config.keyCodes.f1 = 112
+        let app = new Vue({
+            el: '#app',
+            data: {
+                city: '广州',
+                temp: '',
+                biref: ''
+            },
+            methods: {
+                clickEvent: function (event) {
+                    console.log('clickEvent')
+                },
+                clickParent: function (event) {
+                    console.log('clickParent')
+                },
+                clickEvent2: function (event) {
+                    console.log('clickEvent2')
+                },
+                searchWeather:async function (event) {
+                    let httpCityUrl = `https://geoapi.qweather.com/v2/city/lookup?location=${this.city}&key=c9a2d285d903400bb38d25489761e26a`
+                    let totalCity = await fetch(httpCityUrl)
+                    let allCity = await totalCity.json()
+                    let cityId  = allCity.location[0].id
+
+                    let httpUrl = `https://devapi.qweather.com/v7/weather/now?location=${cityId}&key=c9a2d285d903400bb38d25489761e26a`
+                    let res = await fetch(httpUrl)
+                    let result = await res.json()
+                    let now = result.now
+                    this.temp = now.temp
+                    this.biref = now.text
+                },
+                onceEvent: function () {
+                    console.log('只触发一次')
+                },
+                ctrlEvent: function () {
+                    console.log('ctrl事件')
+                }
+            }
+        })
+    </script>
+</body>
+</html>

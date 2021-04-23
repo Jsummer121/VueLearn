@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>事件监听</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>显示点击次数{{count}}</h1>
+<!--        1. 直接写入表达式完成事件操作-->
+        <button @click="count += 1">点击</button>
+<!--        2. 获取事件对象-->
+        <button @click="clickEvent">点击2</button>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                count: 0
+            },
+            methods: {
+                clickEvent: function (event) {
+                    console.log(event)
+                    console.log(this)
+                    this.count++
+                }
+            }
+        })
+    </script>
+</body>
+</html>

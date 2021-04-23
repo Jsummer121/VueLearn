@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>侦听器</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>{{msg}}</h1>
+        <h1>{{reverseMsg}}</h1>
+
+        <ul>
+            <li v-for="item in arr">
+                {{item}}
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                msg: 'hello Vue',
+                arr: [
+                    '小明',
+                    '小红',
+                    '小黑'
+                ]
+            },
+            computed: {
+                // 监听依赖值，一般情况下是get但也可以set
+                reverseMsg: {
+                    get: function () {
+                        return this.msg.split("").reverse().join("")
+                    },
+                    set:function (val) {
+                        console.log(val)
+                        this.msg = val
+                    }
+                }
+            },
+            watch: {
+                // 监听属性值
+                msg: function (val) {
+                    console.log('监听事件------msg')
+                    console.log(val)
+                },
+                arr: function (val) {
+                    console.log('监听事件------arr')
+                    console.log(val)
+                }
+            }
+        })
+    </script>
+</body>
+</html>

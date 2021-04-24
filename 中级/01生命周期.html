@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>生命周期</title>
+    <script src="../js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>{{msg}}</h1>
+        <h1 :class="className">类名绑定</h1>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                msg: 'Hello Vue',
+                className: 'redBg'
+            },
+            beforeCreate() {
+                // 创造之前，这时data和methods里的东西没有绑定到app上
+                console.log("beforeCreate")
+                console.log(this)
+                console.log(this.msg)
+                console.log(this.clickEvent)
+            },
+            created() {
+                // 创造之后，这时data和methods已经绑定到app上
+                console.log('created')
+                console.log(this.msg)
+                console.log(this.clickEvent)
+            },
+            beforeMount() {
+                // 挂载前，此时还不能拿到dom的任何东西
+                console.log('beforeMount')
+                let dom = document.querySelector('.redBg')
+                console.log(dom)
+            },
+            mounted() {
+                // 挂载后，此时已经可以拿到dom的东西
+                console.log('mounted')
+                let dom = document.querySelector('.redBg')
+                console.log(dom)
+            },
+            beforeUpdate() {
+                // 数据修改前
+                console.log('beforeUpdate')
+            },
+            updated(){
+                // 数据修改后
+                console.log('updated')
+            },
+            methods: {
+                clickEvent: function () {
+                    console.log('clickEvent')
+                }
+            }
+        })
+    </script>
+</body>
+</html>

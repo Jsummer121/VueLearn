@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>表单输入绑定</title>
+    <script src="../js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h2>本质上不过是语法糖。它负责监听用户的输入事件以更新数据，并对一些极端场景进行一些特殊处理。</h2>
+
+        <hr>
+        <h3>单行文本输入</h3>
+        <input type="text" name="username" v-model="username" />
+        <p>{{username}}</p>
+        <h3>多行文本输入</h3>
+<!--        注意，如果再里面添加模板语言，并不会生效，他只会显示v-model的内容-->
+        <textarea v-model="username"></textarea>
+
+        <hr>
+        <h3>复选框:选择喜欢的水果</h3>
+        <span v-for="item in fruits">
+            {{item}}
+            <input type="checkbox" name="fruits" v-model="checkFruits" :value="item">
+            <br>
+        </span>
+        <h4>{{checkFruits}}</h4>
+
+        <hr>
+        <h3>单选框：先择最喜欢的水果</h3>
+        <span v-for="item in fruits">
+            {{item}}
+            <input type="radio" name="rfruits" v-model="radioFruits" :value="item">
+            <br>
+        </span>
+        <h4>{{radioFruits}}</h4>
+
+        <hr>
+        <h3>下拉列表框：选择喜欢的城市</h3>
+        <select name="city" v-model="chooseCity">
+            <option v-for="item in citys" :value="item">{{item}}</option>
+        </select>
+        <h3>选择的城市：{{chooseCity}}</h3>
+
+        <hr>
+        <h3>下拉多选框：选择喜欢的城市(按ctrl)</h3>
+        <select name="city" v-model="moreCity" multiple="multiple">
+            <option v-for="item in citys" :value="item">{{item}}</option>
+        </select>
+        <h3>选择的城市：{{moreCity}}</h3>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                username: '小明',
+                fruits: [
+                    '苹果',
+                    '雪梨',
+                    '香蕉',
+                    '西瓜'
+                ],
+                checkFruits: [],
+                radioFruits: '',
+                citys: [
+                    '北京',
+                    '杭州',
+                    '深圳',
+                    '成都'
+                ],
+                chooseCity: '',
+                moreCity: []
+            }
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>滑动菜单栏</title>
+    <script src="../js/vue.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        .page {
+            width: 100%;
+            height: 100px;
+            background: #efefef;
+            position: fixed;
+            left: 0;
+            right: 0;
+        }
+        .rMenu {
+            width: 50%;
+            height: 100vh;
+            background: skyblue;
+            position: fixed;
+            left: 0;
+            right: 0;
+            transform: translateX(50vw);
+        }
+        .slideRight-enter-active, .slideRight-leave-active {
+            transition:all 3s;
+        }
+        .slideRight-enter, .slideRight-leave-to {
+            transform: translateX(100vw);
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="page">
+            首页
+            <button @click="toggleMenu">切换侧边栏</button>
+        </div>
+        <transition name="slideRight">
+            <div class="rMenu" v-show="isShow">
+                侧边栏
+            </div>
+        </transition>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                isShow: true
+            },
+            methods: {
+                toggleMenu:function () {
+                    this.isShow = !this.isShow
+                }
+            }
+        })
+    </script>
+</body>
+</html>

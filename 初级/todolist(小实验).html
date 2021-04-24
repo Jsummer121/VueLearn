@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>todolist</title>
+    <script src="../js/vue.js"></script>
+    <link rel="stylesheet" href="../css/todolist.css">
+</head>
+<body>
+    <div id="app">
+        <div id="header">
+            <span>
+                <label>ToDoList</label>
+                <input type="text" @keydown.enter="addWork" v-model="work" placeholder="请输入ToDoList">
+            </span>
+        </div>
+
+        <div id="content">
+            <div class="working">
+                <label>正在进行</label>
+                <div class="total_number">{{working.length}}</div>
+                <ul>
+                    <li v-for="(item,index) in working">
+                        <input type="checkbox" @click="addToWorked(index, $event)">
+                        <span>
+                            {{item}}
+                        </span>
+                        <a @click="delWorking(index)">-</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="worked">
+                <label>已经完成</label>
+                <div class="total_number">{{worked.length}}</div>
+                <ul>
+                    <li v-for="(item,index) in worked">
+                        <input type="checkbox" @click="addToWorking(index, $event)">
+                        <span>
+                            {{item}}
+                        </span>
+                        <a @click="delWorked(index)">-</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="footer">
+			Copyright © 2021 todolist.cn
+        </div>
+    </div>
+
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                work: '',
+                working: ['看书', '吃饭', '睡觉'],
+                worked: ['洗衣服', '喝水']
+            },
+            methods: {
+                addWork: function () {
+                    this.working.push(this.work)
+                    this.work = ''
+                },
+                delWorking: function (index) {
+                    this.working.splice(index,1)
+                },
+                delWorked: function (index) {
+                    this.worked.splice(index,1)
+                },
+                addToWorked: function (index, event) {
+                    this.worked.push(this.working[index])
+                    this.working.splice(index,1)
+                    // 通过获取点击事件 ev.target.checked的值判断当前点击状态是取消还是选中
+                    event.target.checked = false
+                },
+                addToWorking: function (index, event) {
+                    this.working.push(this.worked[index])
+                    this.worked.splice(index,1)
+                    // 通过获取点击事件 ev.target.checked的值判断当前点击状态是取消还是选中
+                    event.target.checked = false
+                }
+            }
+        })
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>子元素传值父元素</title>
+    <script src="../js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <ul>
+            <school v-for="sch in schoolList"
+                    :school-name="sch"
+                    @cschool="changeEvent"></school>
+        </ul>
+        <h3>选中的学校是：{{chooseSchool}}</h3>
+
+    </div>
+
+    <script>
+        // 学校组件
+        Vue.component('school', {
+            props: ['schoolName'],
+            template: '<li><h3>学校名称：{{schoolName}}</h3><button @click="chooseEvent(schoolName)">选择学校</button></li>',
+            methods: {
+                chooseEvent: function (schoolName) {
+                    // console.log(schoolName)
+                    // 想要将子元素的数据传递给父元素，要自定义触发事件
+                    this.$emit('cschool',schoolName)
+                }
+            }
+        })
+
+
+        let app = new Vue({
+            el: '#app',
+            data: {
+                schoolList: [
+                    '清华',
+                    '北大',
+                    '浙大',
+                    '复旦'
+                ],
+                chooseSchool: ''
+            },
+            methods: {
+                changeEvent: function (data) {
+                    this.chooseSchool = data
+                }
+            }
+        })
+    </script>
+</body>
+</html>

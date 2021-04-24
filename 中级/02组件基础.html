@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>组件基础</title>
+    <script src="../js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <hello-Vue></hello-Vue>
+        <gogogo></gogogo>
+    </div>
+
+    <script>
+        // 前面添加该值为局部注册，如果不添加则是全局注册
+        let helloVue = Vue.component('hello-Vue', {
+            template: '<div>{{msg}}</div>',
+            data: function () {
+                return {
+                    msg: 'Hello Vue'
+                }
+            }
+        })
+        // 下面是全局注册
+        Vue.component('gogogo', {
+            template: '<div>00000</div>'
+        })
+
+        let app = new  Vue({
+            el: '#app',
+            // 局部注册的时候，必须在主el下配置components。
+            components: {
+                'helloVue': helloVue
+            }
+        })
+    </script>
+
+</body>
+</html>

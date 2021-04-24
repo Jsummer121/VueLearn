@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>组件传值</title>
+    <script src="../js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <ul>
+            <!-- 传入静态值 -->
+            <school school-name="清华北大"></school>
+            <!-- 传入动态值 -->
+            <school :school-name="'清华北大'"></school>
+            <school :school-name="schoolList[0]"></school>
+            <!-- 传入循环组件 -->
+            <school v-for="school in schoolList" :school-name="school"></school>
+            <!-- 从父组件传值到子组件 -->
+            <product-com v-for="item in productList" :product="item"></product-com>
+        </ul>
+    </div>
+
+    <script>
+        // 学校组件
+        Vue.component('school', {
+            props: ['schoolName'],
+            template: '<h2>学校名：{{schoolName}}</h2>'
+        })
+
+        // 产品组件
+        Vue.component('product-com',{
+            props: ['product'],
+            template: "            <li>\n" +
+                "                <h3>产品名称：{{product.title}}</h3>\n" +
+                "                <h4>产品描述：{{product.brief}}</h4>\n" +
+                "                <p>产品价格：{{product.price}}</p>\n" +
+                "            </li>"
+        })
+
+        let app = new Vue({
+            el: '#app',
+            data: {
+                productList:[
+                    {
+                        title: '产品1',
+                        price: 10,
+                        brief: '产品描述1'
+                    },
+                    {
+                        title: '产品2',
+                        price: 20,
+                        brief: '产品描述2'
+                    },
+                    {
+                        title: '产品3',
+                        price: 30,
+                        brief: '产品描述3'
+                    },
+                    {
+                        title: '产品4',
+                        price: 30,
+                        brief: '产品描述4'
+                    }
+                ],
+                schoolList: [
+                    '清华',
+                    '北大',
+                    '浙大',
+                    '复旦'
+                ]
+            }
+        })
+    </script>
+</body>
+</html>

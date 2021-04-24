@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>插槽的使用</title>
+    <script src="../js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+<!--        普通方式-->
+        <alert-com1 :html="content"></alert-com1>
+<!--        使用插槽,但此时的content内容为父组件的,不能使用组件内部自己的变量-->
+        <alert-com2>
+            <p>天干物燥,小心火烛,{{content}}, {{abc}}</p>
+        </alert-com2>
+    </div>
+
+    <script>
+        Vue.component('alert-com1', {
+            props: ['html'],
+            template: '        <div class="alert">\n' +
+                '            <h1>温馨提示:</h1>\n' +
+                '            <div class="content">\n' +
+                '<p>{{html}}</p>\n' +
+                '            </div>\n' +
+                '        </div>'
+        })
+
+        Vue.component('alert-com2', {
+            template: '        <div class="alert">\n' +
+                '            <h1>温馨提示:</h1>\n' +
+                '            <div class="content">\n' +
+                '<slot></slot>\n' +
+                '            </div>\n' +
+                '        </div>',
+            data: function () {
+                return {
+                    abc: '111'
+                }
+            }
+        })
+
+
+        let app = new Vue({
+            el: '#app',
+            data: {
+                content: '天干物燥,小心火烛'
+            }
+        })
+    </script>
+
+</body>
+</html>

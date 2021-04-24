@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>组件传值升级版</title>
+    <script src="../js/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <ul>
+            <school v-for="sch in schoolList"
+                    :action="changeEvent"
+                    :school-name="sch"
+                    @cschool="changeEvent"></school>
+        </ul>
+        <h3>选中的学校是：{{chooseSchool}}</h3>
+
+    </div>
+
+    <script>
+        // 学校组件
+        Vue.component('school', {
+            props: ['schoolName', 'action'],
+            template: '<li><h3>学校名称：{{schoolName}}</h3><button @click="chooseEvent(schoolName)">选择学校</button></li>',
+            methods: {
+                chooseEvent: function (schoolName) {
+                    // 打印传入的方法
+                    console.log(this)
+                    // 1.通过父组件传入的方法进行执行操作
+                    // this.action(schoolName)
+                    // 2.通过子组件访问父组件的方法进行操作
+                    // this.$parent.changeEvent(schoolName)
+                    // 3. 直接修改父元素
+                    // this.$parent.chooseSchool = schoolName
+                    // 4. 根据根元素修改
+                    this.$root.changeEvent(schoolName)
+                }
+            }
+        })
+
+        let app = new Vue({
+            el: '#app',
+            data: {
+                schoolList: [
+                    '清华',
+                    '北大',
+                    '浙大',
+                    '复旦'
+                ],
+                chooseSchool: ''
+            },
+            methods: {
+                changeEvent: function (data) {
+                    console.log(this)
+                    this.chooseSchool = data
+                }
+            }
+        })
+    </script>
+</body>
+</html>

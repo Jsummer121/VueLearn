@@ -218,3 +218,91 @@ vue中动画可以简单理解成6个钩子函数的使用
 -   `leave-to-class` (2.1.8+)
 
 并且自定义的类名优先级高于普通的类名。这里推荐使用`animate.css`
+
+## 十、生命周期
+总的来说，Vue的生命周期从创建到消灭，一共有3个阶段：
+-    初始化
+-    挂载
+-    销毁
+
+在这里，一共有8个钩子
+-   beforecreate()
+-   created()
+-   beforeMount()
+-   mounted()
+-   beforeUpdate()
+-   updated()
+-   beforeDestory()
+-   destory()
+## 十一、组件
+
+组件可以将重复度较高的部分进行抽取形成一个组件
+
+### 组件的创建
+
+组件的创建方法：Vue.component('name', {})
+
+组件的注册有两种：全局和局部。如果不在Vue前面添加let或者var，则是全局的组件，如果添加了，则是局部变量。局部变量必须在根组件内部使用`components`进行申明。
+
+对于 `components` 对象中的每个 property 来说，其 property 名就是自定义元素的名字，其 property 值就是这个组件的选项对象。
+
+### 父组件传值子组件
+
+-   子组件在内部声明一个`props`，然后再列表里放入需要获取的值
+    -   `props: ['school']`
+-   再父组件中，使用刚刚声明的值进行绑定，再进行传值
+    -   `<school v-for="sch in schoolList" :school-name="sch"></school>`
+
+### 子组件向父组件传值
+
+-   子组件先再需要传参的地方设置事件
+
+-   在事件内部实现`$emit`
+
+    -   `this.$emit('cschool',schoolName)`
+
+-   此时，回到生成该子组件的地方，声明一个单机事件，使用刚刚emit声明的名字
+
+    -   `<school v-for="sch in schoolList" :school-name="sch" @cschool="changeEvent"></school>`
+
+-   最后，实现该方法即可
+
+    -   ```vue
+        methods: {
+            changeEvent: function (data) {
+                this.chooseSchool = data
+            }
+        }
+        ```
+### 组件传方法
+除了传值，组件之间同样可以方法。
+
+```html
+// 1.通过父组件传入的方法进行执行操作
+this.action(schoolName)
+// 2.通过子组件访问父组件的方法进行操作
+this.$parent.changeEvent(schoolName)
+// 3. 直接修改父元素
+this.$parent.chooseSchool = schoolName
+```
+
+### v-model的使用
+首先要知道,v-model的原理:
+-   先绑定value为一个值(a)
+-   然后,绑定该数据上的input事件.通过event赋值给a: `a= $event.target.value`
+
+因此,如果要再父子组件进行v-model,我们需要组件的props中定义value,然后再`$emit`的时候名字为input即可直接使用v-model进行绑定
+```html
+Vue.component('input-com2', {
+    props: ['value'],
+    template: `<input type="text" :value="value" @input="$emit('input', $event.target.value)">`,
+})
+```
+
+### 动态组件
+
+要是有动态组件，需要再父页面中使用`<component></component>`即可，然后使用`is`来进行绑定即可。对于多个组件，可以直接再components中写入名字即可。
+
+## 十二、插槽
+
+对于正常的组件，是无法通过父组件向子组件写入html的。如果真的想要，那就再子组件中写入一个`slot></slot>`即可。

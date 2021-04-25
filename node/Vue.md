@@ -1,6 +1,8 @@
 # Vue笔记
 > 官方文档：https://vuejs.bootcss.com/guide/conditional.html
 
+>js中匿名函数的使用：`()=>{}`或者`function () {}`
+
 ## 一、初识Vue
 &ensp;Vue在正常的html中，需要先导入：
 ```javascript
@@ -257,15 +259,25 @@ vue中动画可以简单理解成6个钩子函数的使用
 
 -   子组件先再需要传参的地方设置事件
 
+    -   ```
+        template: '<li><h3>学校名称：{{schoolName}}</h3><button @click="chooseEvent(schoolName)">选择学校</button></li>',
+        ```
+
 -   在事件内部实现`$emit`
 
-    -   `this.$emit('cschool',schoolName)`
+    -               methods: {
+                        chooseEvent: function (schoolName) {
+                            // console.log(schoolName)
+                            // 想要将子元素的数据传递给父元素，要自定义触发事件
+                            this.$emit('cschool',schoolName)
+                        }
+                    }
 
 -   此时，回到生成该子组件的地方，声明一个单机事件，使用刚刚emit声明的名字
 
     -   `<school v-for="sch in schoolList" :school-name="sch" @cschool="changeEvent"></school>`
 
--   最后，实现该方法即可
+-   最后，再父组件实现该方法即可
 
     -   ```vue
         methods: {
@@ -306,3 +318,187 @@ Vue.component('input-com2', {
 #### 插槽
 
 对于正常的组件，是无法通过父组件向子组件写入html的。如果真的想要，那就再子组件中写入一个`slot></slot>`即可。
+
+## 十二、vuecli安装
+
+>    https://cli.vuejs.org/zh/guide/creating-a-project.html#vue-create
+
+-   ```bash
+    npm install -g @vue/cli
+    ```
+
+-   创建一个公共目录，存放所有项目
+
+-   使用vue start app_name来创建app
+
+-   下载完成之后，进入文件
+
+-   使用`npm run server`跑整个项目
+
+## 十三、socket-io
+> github地址:https://github.com/socketio/socket.io
+
+### 下载
+
+-   从github复制socket.io.js文件，放入自己的文件中
+-   使用npm下载`socket-io`：`npm install --save socket.io`
+
+### 服务器搭建
+
+```javascript
+// 文件名：index.js
+const server = require('http').createServer();
+const io = require('socket.io')(server,{cors: true});  // 这里设置了cors，可以有效解决2.3版本以后的跨域问题
+
+// 设置监听端口
+server.listen(80);
+
+// 监听io的连接事件
+// 模板：io.on('connection', ()=>{})
+io.on('connection', client => {
+    // emit发事件:前面的字符串为该事件的方法,客户端可以通过该方法实现一对一的访问
+    client.emit('news', {hello: 'hello Vue'});
+    // on接收事件
+    client.on('event', data => { console.log(data) });
+});
+```
+
+启动命令：`node index.js`
+
+### 完整的服务器搭建例子
+
+```javascript
+const server = require('http').createServer(handler)
+const io = require('socket.io')(server,{cors: true})
+const fs = require('fs')
+
+server.listen(80)
+
+// 处理web服务器正常请求
+function handler(req, res) {
+    fs.readFile(__dirname + '/index.html',
+        function (err, data) {
+            if (err) {
+                res.writeHead(500)
+                return res.end('Error')
+            }
+            res.writeHead(200)
+            res.end(data)
+        })
+}
+
+// 实时通讯的连接
+// io.on('connection', ()=>{}),监听io的连接事件
+io.on('connection', function (client) {
+    // emit发事件:前面的字符串为该事件的方法,客户端可以通过该方法实现一对一的访问
+    client.emit('news', {hello: 'world'})
+    // on接收事件
+    client.on('event', function (data) {
+        console.log(data)
+    })
+})
+```
+
+### 客户端搭建
+
+```javascript
+<script src="js/socket.io.js"></script>
+const socket = io("http://localhost")
+socket.on('news', data => {
+    console.log(data)
+    socket.emit('event',{my:'Hello World'})
+})
+```
+
+### socket.io自带的事件
+
+-   connect:查看socket是否渲染成功 
+-   disconnect:检测socket断开连接 
+-   reconnect:重新连接socket事件
+
+## 十四、express
+
+这个是socket.io的升级版
+
+### 安装
+
+`npm install --save express`
+
+`npm install express express-generator -g`
+
+### 手动搭建服务器
+
+```javascript
+const app = require('express')();
+const server = require('http').createServer(app);
+const io = require('socket.io')(server,{cors: true});
+
+server.listen(80);
+
+io.on('connection', client => {
+    client.emit('news', {hello: 'hello Vue'});
+    client.on('event', data => { console.log(data) });
+});
+```
+
+同样的，需要注意搭建的时候注意跨域问题
+
+客户端可以和之前一样这里就不再重复了
+
+### 自动搭建
+
+#### 下载依赖
+
+-   安装socket.io：`npm install socket.io --save`
+
+-   在命令行输入:`express --view=ejs EXPRESS_NAME`即可
+-    移动项目路径：cd EXPRESS_NAME`
+-   下载依赖：npm install
+-   运行app：SET DEBUG=EXPRESS_NAME`:* & npm start
+
+#### 文件配置
+
+-   在EXPRESS_NAME文件下创建一个socketio.js文件
+
+-   在文件中写入一个可以为我们后续自己调用的接口
+
+    -   ```javascript
+        let socketio = {}
+        
+        function getSocket(server) {
+            socketio.io = require('socket.io')(server,{cors: true})
+        }
+        
+        socketio.getSocket = getSocket;
+        
+        module.exports = socketio
+        ```
+
+-   打开bin目录下的www文件，在第23行插入刚刚的配置
+
+    -   ```javascript
+        var socketio = require('../socketio')
+        socketio.getSocket(server)
+        ```
+
+-   找到app.js，在41行添加如下代码即可
+
+    -   ```javascript
+        setTimeout(()=>{
+            let socketio = require('./socketio')
+            let io = socketio.io;
+            io.on('connection', client => {
+                client.emit('news', {hello: 'hello Vue'});
+                client.on('event', data => { console.log(data) });
+            });
+        }, 100)
+        ```
+
+-   在之前的客户端添加3000端口
+
+    -   `const socket = io("http://localhost:3000")`
+
+#### 运行
+
+命令：`npm start`
+

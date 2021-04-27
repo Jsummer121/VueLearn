@@ -502,3 +502,242 @@ io.on('connection', client => {
 
 命令：`npm start`
 
+## 十五、vue原理
+
+我们知道，正常的情况下，需要通过Vue来实现vue的生成。然后在里面传入我们所需要的数据和配置信息。那我们就可以根据这个来生成一个class，然后利用这个来理解Vue的原理
+
+### Html初始化
+
+```html
+<div id="app">
+    <h1>{{msg}}</h1>
+    <h1 v-html="msg"></h1>
+    <input type="text" v-model="msg">
+    <button @click="changeEvent">修改msg</button>
+</div>
+
+<script>
+    let app = new Vue({
+        el: '#app',
+        data: {
+            msg: 'Hello World',
+            username: 'summer'
+        },
+        methods: {
+            changeEvent: function () {
+                this.msg = 'hello Vue'
+            }
+        }
+    })
+</script>
+```
+
+### Vue初始化
+
+#### 1. el的绑定
+
+最开始的时候，我们需要创建一个Vueclass，然后再构造函数内部进行简单的配置el。
+
+```javascript
+class Vue{
+    // 这里options就是我们正常的传入值
+    constructor(options){
+        // 通过选择器获取跟对象
+        this.$el = querySelector(options.el)
+        this.$options = options
+    }
+}
+```
+
+#### 2. data的绑定
+
+当完成el绑定之后。我们就需要进行数据的绑定，即实现将options的data中的数据放入this中。
+
+这里我们可以通过轮询，将每个值依次通过defineProperty函数放入即可。
+
+>   相关网址：https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
+
+简单的说，就是通过defineProperty函数给this添加新的属性和值
+
+```javascript
+proxyData(){
+    for (let key in this.$options.data){
+        Object.defineProperty(this, key, {
+            // 是否可以更改此属性描述符的类型，以及是否可以从相应的对象中删除该属性。
+            configurable:false,
+            // 是否可以被枚举这两个都是默认为false
+            enumerable:true,
+            // 添加设置事件
+            set(val){
+                this.$options.data[key] = val
+            },
+            get(){
+                return this.$options.data[key]
+            }
+        })
+    }
+}
+```
+
+#### 4. 劫持事件
+
+当实现上述之后，我们会发现，确实在this中已经加入了相关的data。但我们需要知道一件事：一个键可能关联了很多很多的对象，因此我们为了方便管理，需要添加一个新的类，然后这个类中包含app对象，key的值，节点的值和属性名。然后就是最关键的添加更新事件，
+
+```javascript
+class Watch{
+    constructor(vm, key, node, attr, nType) {
+        // vm即实例化的app对象
+        this.vm = vm;
+        // key即绑定的vm属性
+        this.key = key;
+        // node即此vm[key]数据绑定的html节点
+        this.node = node;
+        // vm数据所绑定的html节点的属性名称
+        this.attr = attr;
+    }
+    update(){
+        // 进行数据更新
+        this.node[this.attr] = this.vm[this.key]
+    }
+}
+```
+
+当配置好之后，我们就可以来完成我们的劫持事件。
+
+-   首先，依次循环data中的值和获取该键对应的值
+-   同样利用defineProperty方法添加往每个数据中添加set和get事件
+-   对于get直接返回该值即可
+-   对于set，获取改动的值之后，将原来的值换成现在的值，然后判断$watchEvent中是否存放了相关的watcher，如果有则依次进行数据更新，如果没有就算了
+
+```javascript
+class Vue{
+    constructor(options) {
+        // 通过选择器获取根对象
+        this.$el = document.querySelector(options.el)
+        this.$options = options
+
+        // 设置一个对象，专门保存修改和更新
+        // this.$watchEvent[key] = [event, event, event]
+        this.$watchEvent = {}
+
+        // 代理option的data数据
+        this.proxyData()
+
+        // 劫持事件
+        this.observe()
+    }
+    // 劫持事件
+    observe(){
+        for (let key in this.$options.data){
+            // 获取此处的value保存
+            let value = this.$options.data[key]
+            let that = this
+            Object.defineProperty(this.$options.data, key, {
+                configurable:false,
+                enumerable:true,
+                set(val){
+                    // console.log('触发设置事件')
+                    value = val
+                    if(that.$watchEvent[key]){
+                        that.$watchEvent[key].forEach((item, index)=>{
+                            item.update()
+                        })
+                    }
+                },
+                get(){
+                    // 获取this[key]时，返回options.data[key]
+                    return value
+                }
+            })
+        }
+    }
+```
+
+至此，初始化就已经全部完成了，接下来就是挂载
+
+### Vue挂载
+
+-   根据节点依次循环他的子节点
+-   如果子节点的类型是1：（说明是元素类型）
+    -   判断该节点是否有`v-html`
+        -   根据`v-html`获取键，然后判断主节点是否含有这个键
+        -   有键的话，将该这个键所对应的值放入innerhtml
+        -   根据四个相关数据生成watcher然后添加放入this.$watchEvent[vmKey]
+        -   最后，删除该子节点的`v-html`属性即可
+    -   判断是否包含`v-model`
+        -   …
+    -   判断是否包含`@click`属性
+        -   …
+    -   查看其子节点的子节点是否含有相关属性，如果有则进入
+-   如果子节点的类型是3：（说明是文本类型）
+    -   文本类型比较简单，利用正则匹配即可
+
+```javascript
+// 编译事件
+compile(cNode){
+    cNode.childNodes.forEach((node, index)=>{
+        if(node.nodeType == 1){
+            // 元素类型
+            if(node.hasAttribute('v-html')){
+                let vmKey = node.getAttribute('v-html').trim()
+                if(this.hasOwnProperty(vmKey)){
+                    node.innerHTML = this[vmKey]
+                    let wather = new Watch(this, vmKey, node, 'innerHTML')
+                    if(!this.$watchEvent[vmKey]){
+                        this.$watchEvent[vmKey] = []
+                    }
+                    this.$watchEvent[vmKey].push(wather)
+                    // 删除属性
+                    node.removeAttribute('v-html')
+                }
+            }
+            // 判断是否右v-model属性
+            if (node.hasAttribute('v-model')){
+                let vmKey = node.getAttribute('v-model').trim()
+                if(this.hasOwnProperty(vmKey)){
+                    node.value = this[vmKey]
+                    let wather = new Watch(this, vmKey, node, 'value')
+                    if(!this.$watchEvent[vmKey]){
+                        this.$watchEvent[vmKey] = []
+                    }
+                    this.$watchEvent[vmKey].push(wather)
+                }
+                node.addEventListener('input', (event)=>{
+                    this[vmKey] = node.value
+                })
+                // 删除属性
+                node.removeAttribute('v-model')
+            }
+            // 判断是否有绑定@click
+            if (node.hasAttribute('@click')){
+                node.addEventListener('click', (event)=>{
+                    let vmKey = node.getAttribute('@click').trim()
+                    this.$options.methods[vmKey](event)
+                })
+            }
+
+            if(node.childNodes.length > 0){
+                this.compile(node)
+            }
+        }
+        if(node.nodeType == 3){
+            // 文本类型
+            let reg = /\{\{(.*?)\}\}/g;
+            let text = node.textContent
+            node.textContent= text.replace(reg, (match, vmKey)=>{
+                vmKey = vmKey.trim()
+                if(this.hasOwnProperty(vmKey)){
+                    node.value = this[vmKey]
+                    let wather = new Watch(this, vmKey, node, 'textContent')
+                    if(!this.$watchEvent[vmKey]){
+                        this.$watchEvent[vmKey] = []
+                    }
+                    this.$watchEvent[vmKey].push(wather)
+                }
+                return this[vmKey]
+            })
+        }
+    })
+}
+```
+

@@ -741,3 +741,633 @@ compile(cNode){
 }
 ```
 
+## 十六、路由
+
+首先，按照路由的方式生成的项目，会有一个App.vue和router/index.js这两个主要的文件。其中index.js里面存放的是路由的配置信息，而App.vue是整个项目的门面，进行主页面展示。
+
+>   官方文档：https://router.vuejs.org/zh/guide/essentials/navigation.html
+
+### 1.router和route
+
+router是进行所有路由操作的核心元件，例如相关的路由跳转等操作。而route则是一个活跃路由，它里面存放着该路由下的一些参数信息，要在template中使用相关信息就可以使用route获取
+
+### 2.动态路由
+
+**使用方法**：在index.js中，设置的path后面使用`/:Params_name`即可。
+
+```javascript
+{
+    path: '/news/:id',
+    name: 'News',
+    component: News
+},
+```
+
+而所获得的值可以使用route.params来获取，当然，如果向查看路由的改变，可以使用watch来设置监听
+
+```javascript
+watch: {
+    $route(to, from) {
+        // 对路由变化作出响应...
+    }
+}
+```
+
+### 3.嵌套路由
+
+实际生活中的应用界面，通常由多层嵌套的组件组合而成。同样地，URL 中各段动态路径也按某种结构对应嵌套的各层组件。例如在新闻页面下，搜不同的东西出现不同的页面。
+
+**使用方法**：在index.js中配置完基本信息之后，添加一个children属性，然后再其数组里面放入新的配置信息接口
+
+```html
+<template>
+    <div>
+        <h1>BigNews</h1>
+        <div>
+            <p>设置一个children属性，该列表里面存放入全部的子组件即可(不能在其前面添加/)</p>
+        </div>
+        <div id="nav">
+            <router-link to="/bignews">Video</router-link> |
+            <router-link to="/bignews/text">Text</router-link> |
+            <router-link to="/bignews/image">Image</router-link>
+        </div>
+        <router-view></router-view>
+    </div>
+</template>
+```
+
+```javascript
+path: '/bignews',
+    component: BigNews,
+        children:[
+            {
+                path: '',
+                component: videoCom
+            },
+            {
+                path: 'text',
+                component: textCom
+            },
+            {
+                path: 'image',
+                component: imageCom
+            }
+        ]
+```
+
+### 4.编程式导航
+
+-   router.push(location, onComplete?, onAbort?)：向history栈中添加一个记录
+    -   简写：<router-link :to="...">
+-   router.replace(location, onComplete?, onAbort?)：替换history栈中第一个记录
+    -   简写：<router-link :to="..." replace>
+-   router.go(n)：向前、向后跳动n步
+
+### 5.命名路由
+
+使用方法：在index.js中配置完基础信息之后，添加name即可
+
+```javascript
+{
+    path: '/about',
+    name: 'about',
+    component: About
+},
+```
+
+### 6.命名视图
+
+首先，需要明确的一点就是，要是有命名视图那就必须在根vue（也就是一般的App.vue）上使用。
+
+使用方式：在`<router-view>`中添加一个name即可，在index.js中使用components进行相关配置
+
+```html
+<div>
+    <router-view name="nav"/>
+    <router-view name="aside"/>
+    <router-view />  <--!对于没有给出名字的，则默认为default-->
+</div>  
+```
+
+```javascript
+{
+    path: '/',
+    components: {
+        default: Home,
+        nav: NavView,
+        aside: AsideView
+    }
+}
+```
+
+### 7.重定向和别名
+
+重定向：在index.js中配置完之后，添加`redirect:`即可
+
+别名：在index.js中配置完之后，添加`alias:`即可
+
+## 十七、路由高级
+### 1. 导航守卫
+导航首位其实就是在路由变化过程中生成的钩子函数
+主要分为三种：
+-    前置守卫
+-    解析守卫
+-    后置钩子
+
+当然，这里的守卫方式也分为全局的和局部的。
+#### 1.1 全局前置守卫
+当一个导航被触发时，全局前置守卫按照创建顺序调用。
+**参数**：
+-   to: Route: 即将要进入的目标 路由对象
+
+-   from: Route: 当前导航正要离开的路由
+
+-   next: Function: 一定要调用该方法来 resolve 这个钩子。执行效果依赖 next 方法的调用参数。
+
+    -   next(): 进行管道中的下一个钩子。如果全部钩子执行完了，则导航的状态就是 confirmed (确认的)。
+
+    -   next(false): 中断当前的导航。如果浏览器的 URL 改变了 (可能是用户手动或者浏览器后退按钮)，那么 URL 地址会重置到 from 路由对应的地址。
+
+    -   next('/') 或者 next({ path: '/' }): 跳转到一个不同的地址。当前的导航被中断，然后进行一个新的导航。你可以向 next 传递任意位置对象，且允许设置诸如 replace: true、name: 'home' 之类的选项以及任何用在 router-link 的 to prop 或 router.push 中的选项。
+    -   next(error): (2.4.0+) 如果传入 next 的参数是一个 Error 实例，则导航会被终止且该错误会被传递给 router.onError() 注册过的回调。
+
+```javascript
+router.beforeEach((to, from, next)=>{
+  console.log('beforeEach')
+  console.log(to)
+  console.log(from)
+  next() // 进行跳转
+
+  // next(false) // 不进行跳转：此时路由如果改变，会发现页面还是不进行改变的，始终是原来的样式
+
+  // 进行权限校验，然后设定重定向
+  // let isLogin = false
+  // if (isLogin||to.path==='/login'){
+  //   next()
+  // }else {
+  //   next({
+  //     path: '/login'
+  //   })
+  // }
+})
+```
+
+#### 1.2 全局后置钩子
+在导航确认之后，执行函数，因此这里已经没有next参数
+```javascript
+router.afterEach((to, from)=>{
+  console.log('afterEach')
+  console.log(to)
+  console.log(from)
+})
+```
+#### 1.3路由独享守卫
+该方法写在路由定义的内部，名字为：`beforeEnter`
+该方法与前置守卫方法使用类似。
+```javascript
+{
+    path: '/about',
+    name: 'About',
+    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
+    // about独享的事件
+    beforeEnter: (to, from ,next) => {
+        console.log('about独享事件')
+        // 进行权限校验，然后设定重定向
+        let isLogin = true
+        if (isLogin||to.path==='/login'){
+            next()
+        }else {
+            next({
+                path: '/login'
+            })
+        }
+    }
+}
+```
+#### 1.4 组件内守卫
+最后，你可以在路由组件内直接定义以下路由导航守卫：
+-   beforeRouteEnter
+-   beforeRouteUpdate (2.2 新增)
+-   beforeRouteLeave
+
+```javascript
+beforeRouteEnter(to, from, next) {
+    // 在渲染该组件的对应路由被 confirm 前调用
+    // 不！能！获取组件实例 `this`
+    // 因为当守卫执行前，组件实例还没被创建
+    console.log('--beforeRouteEnter')
+    next()
+},
+beforeRouteUpdate(to, from, next) {
+    // 在当前路由改变，但是该组件被复用时调用
+    // 举例来说，对于一个带有动态参数的路径 /foo/:id，在 /foo/1 和 /foo/2 之间跳转的时候，
+    // 由于会渲染同样的 Foo 组件，因此组件实例会被复用。而这个钩子就会在这个情况下被调用。
+    // 可以访问组件实例 `this`
+    console.log('--beforeRouteUpdate')
+    next()
+},
+beforeRouteLeave(to, from, next) {
+    // 导航离开该组件的对应路由时调用
+    // 可以访问组件实例 `this`
+    console.log('--beforeRouteLeave')
+    const answer = window.confirm('Do you really want to leave? you have unsaved changes!')
+    if (answer) {
+        next()
+    } else {
+        next(false)
+    }
+}
+}
+```
+
+#### 1.5 完整的导航解析
+1.导航被触发。
+
+2.在失活的组件里调用 beforeRouteLeave 守卫。
+
+3.调用全局的 beforeEach 守卫。
+
+4.在重用的组件里调用 beforeRouteUpdate 守卫 (2.2+)。
+
+5.在路由配置里调用 beforeEnter。
+
+6.解析异步路由组件。
+
+7.在被激活的组件里调用 beforeRouteEnter。
+
+8.调用全局的 beforeResolve 守卫 (2.5+)。
+
+9.导航被确认。
+
+10.调用全局的 afterEach 钩子。
+
+11.触发 DOM 更新。
+
+12.调用 beforeRouteEnter 守卫中传给 next 的回调函数，创建好的组件实例会作为回调函数的参数传入。
+
+### 2. 路由元信息
+定义路由的时候可以配置 meta 字段
+
+
+```javascript
+router = {
+    path: '/about',
+    name: 'About',
+    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
+    meta: {requiresAuth: true}
+}
+
+
+router.beforeEach((to, from, next)=> {
+    // 根据meta进行校验
+    if (to.meta.requiresAuth && !isLogin) {
+        next({path: '/login'})
+    } else {
+        next()
+    }
+}
+```
+
+### 3. 过渡动效
+
+路由里面的过渡动效与普通的动效类似，直接在`<router-view>`的外面嵌套一层`<transition>`即可。
+
+在这里也涉及全局和局部，如果是在app.vue里面添加的则是全局的动效而如果是在组件内部添加的，则是局部分，我们还可以为他们添加一个名字。
+
+注：由于vue的动画默认是进入离开同时进行，这样会导致有明显的动画不适应，因此我们可以使用过度模式。在transition的mode内进行处理。
+
+-   `in-out`：新元素先进行过渡，完成之后当前元素过渡离开。
+-   `out-in`：当前元素先进行过渡，完成之后新元素过渡进入。
+
+```javascript
+<transition name="fade" mode="out-in">
+  <!-- ... the buttons ... -->
+</transition>
+```
+
+### 4. 数据获取
+
+>   https://router.vuejs.org/zh/guide/advanced/data-fetching.html#%E5%AF%BC%E8%88%AA%E5%AE%8C%E6%88%90%E5%90%8E%E8%8E%B7%E5%8F%96%E6%95%B0%E6%8D%AE
+
+获取数据我们有两种方式：
+
+-   **导航完成之后获取**：先完成导航，然后在接下来的组件生命周期钩子中获取数据。在数据获取期间显示“加载中”之类的指示。（created钩子内）
+-   **导航完成之前获取**：导航完成前，在路由进入的守卫中获取数据，在数据获取成功后执行导航。（在beforeRouteEnter）
+
+### 5. 页面滚动
+
+使用前端路由，当切换到新路由时，想要页面滚到顶部，或者是保持原先的滚动位置，就像重新加载页面那样。 `vue-router` 能做到，而且更好，它让你可以自定义路由切换时页面如何滚动。
+
+**注意: 这个功能只在支持 `history.pushState` 的浏览器中可用。**
+
+```javascript
+const router = new VueRouter({
+  mode: 'history',
+  base: process.env.BASE_URL,
+  routes,
+  scrollBehavior (to, from, savedPosition) {
+    console.log('-------')
+    console.log(savedPosition)
+    if(to.path==='/list' && savedPosition){
+      return {x: 0, y: savedPosition.y/2}
+    }
+  }
+})
+```
+
+`scrollBehavior` 方法接收 `to` 和 `from` 路由对象。第三个参数 `savedPosition` 当且仅当 `popstate` 导航 (通过浏览器的 前进/后退 按钮触发) 时才可用。
+
+这个方法返回滚动位置的对象信息，长这样：
+
+-   `{ x: number, y: number }`
+-   `{ selector: string, offset? : { x: number, y: number }}`
+-   `behavior: 'smooth'`可以设置平滑滚动
+
+### 6. 路由懒加载
+
+当打包构建应用时，JavaScript 包会变得非常大，影响页面加载。如果我们能把不同路由对应的组件分割成不同的代码块，然后当路由被访问的时候才加载对应组件，这样就更加高效了。
+
+-   在路由配置时，使用动态导入。
+
+    -   ```javascript
+        {
+            path: '/list',
+            component: ()=>import('../views/list'),
+          }
+        ```
+
+-   把组件按组分块，
+
+    -   ```javascript
+        const Foo = () => import(/* webpackChunkName: "group-foo" */ './Foo.vue')
+        ```
+
+## 十八、axios
+
+>   http://www.axios-js.com/zh-cn/docs/
+
+### **代码实例**：
+
+```javascript
+this.$axios({
+	methos: "post",
+	url: 'apiURL',
+	data: {
+		keyword: "1"
+	}
+})
+.then(response => {
+	console.log(response, "success");
+})
+.catch(error => console.log(error, "error"))
+```
+
+### **相关api**：
+
+-   `axios.request(config)` 该方法是下面所有方法的“父类”
+-   `axios.get(url, params: {}, config)` get方法需要多传一个params
+-   `axios.delete(url, params, config)`
+-   `axios.head(url, params, config)`
+-   `axios.options(url, params, config)`
+-   `axios.post(url, params, config)`
+-   `axios.put(url, params, config)`
+
+### 请求配置
+
+```
+{
+   // `url` 是用于请求的服务器 URL
+  url: '/user',
+
+  // `method` 是创建请求时使用的方法
+  method: 'get', // default
+
+  // `baseURL` 将自动加在 `url` 前面，除非 `url` 是一个绝对 URL。
+  // 它可以通过设置一个 `baseURL` 便于为 axios 实例的方法传递相对 URL
+  baseURL: 'https://some-domain.com/api/',
+
+  // `transformRequest` 允许在向服务器发送前，修改请求数据
+  // 只能用在 'PUT', 'POST' 和 'PATCH' 这几个请求方法
+  // 后面数组中的函数必须返回一个字符串，或 ArrayBuffer，或 Stream
+  transformRequest: [function (data, headers) {
+    // 对 data 进行任意转换处理
+    return data;
+  }],
+
+  // `transformResponse` 在传递给 then/catch 前，允许修改响应数据
+  transformResponse: [function (data) {
+    // 对 data 进行任意转换处理
+    return data;
+  }],
+
+  // `headers` 是即将被发送的自定义请求头
+  headers: {'X-Requested-With': 'XMLHttpRequest'},
+
+  // `params` 是即将与请求一起发送的 URL 参数
+  // 必须是一个无格式对象(plain object)或 URLSearchParams 对象
+  params: {
+    ID: 12345
+  },
+
+   // `paramsSerializer` 是一个负责 `params` 序列化的函数
+  // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
+  paramsSerializer: function(params) {
+    return Qs.stringify(params, {arrayFormat: 'brackets'})
+  },
+
+  // `data` 是作为请求主体被发送的数据
+  // 只适用于这些请求方法 'PUT', 'POST', 和 'PATCH'
+  // 在没有设置 `transformRequest` 时，必须是以下类型之一：
+  // - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
+  // - 浏览器专属：FormData, File, Blob
+  // - Node 专属： Stream
+  data: {
+    firstName: 'Fred'
+  },
+
+  // `timeout` 指定请求超时的毫秒数(0 表示无超时时间)
+  // 如果请求话费了超过 `timeout` 的时间，请求将被中断
+  timeout: 1000,
+
+   // `withCredentials` 表示跨域请求时是否需要使用凭证
+  withCredentials: false, // default
+
+  // `adapter` 允许自定义处理请求，以使测试更轻松
+  // 返回一个 promise 并应用一个有效的响应 (查阅 [response docs](#response-api)).
+  adapter: function (config) {
+    /* ... */
+  },
+
+ // `auth` 表示应该使用 HTTP 基础验证，并提供凭据
+  // 这将设置一个 `Authorization` 头，覆写掉现有的任意使用 `headers` 设置的自定义 `Authorization`头
+  auth: {
+    username: 'janedoe',
+    password: 's00pers3cret'
+  },
+
+   // `responseType` 表示服务器响应的数据类型，可以是 'arraybuffer', 'blob', 'document', 'json', 'text', 'stream'
+  responseType: 'json', // default
+
+  // `responseEncoding` indicates encoding to use for decoding responses
+  // Note: Ignored for `responseType` of 'stream' or client-side requests
+  responseEncoding: 'utf8', // default
+
+   // `xsrfCookieName` 是用作 xsrf token 的值的cookie的名称
+  xsrfCookieName: 'XSRF-TOKEN', // default
+
+  // `xsrfHeaderName` is the name of the http header that carries the xsrf token value
+  xsrfHeaderName: 'X-XSRF-TOKEN', // default
+
+   // `onUploadProgress` 允许为上传处理进度事件
+  onUploadProgress: function (progressEvent) {
+    // Do whatever you want with the native progress event
+  },
+
+  // `onDownloadProgress` 允许为下载处理进度事件
+  onDownloadProgress: function (progressEvent) {
+    // 对原生进度事件的处理
+  },
+
+   // `maxContentLength` 定义允许的响应内容的最大尺寸
+  maxContentLength: 2000,
+
+  // `validateStatus` 定义对于给定的HTTP 响应状态码是 resolve 或 reject  promise 。如果 `validateStatus` 返回 `true` (或者设置为 `null` 或 `undefined`)，promise 将被 resolve; 否则，promise 将被 rejecte
+  validateStatus: function (status) {
+    return status >= 200 && status < 300; // default
+  },
+
+  // `maxRedirects` 定义在 node.js 中 follow 的最大重定向数目
+  // 如果设置为0，将不会 follow 任何重定向
+  maxRedirects: 5, // default
+
+  // `socketPath` defines a UNIX Socket to be used in node.js.
+  // e.g. '/var/run/docker.sock' to send requests to the docker daemon.
+  // Only either `socketPath` or `proxy` can be specified.
+  // If both are specified, `socketPath` is used.
+  socketPath: null, // default
+
+  // `httpAgent` 和 `httpsAgent` 分别在 node.js 中用于定义在执行 http 和 https 时使用的自定义代理。允许像这样配置选项：
+  // `keepAlive` 默认没有启用
+  httpAgent: new http.Agent({ keepAlive: true }),
+  httpsAgent: new https.Agent({ keepAlive: true }),
+
+  // 'proxy' 定义代理服务器的主机名称和端口
+  // `auth` 表示 HTTP 基础验证应当用于连接代理，并提供凭据
+  // 这将会设置一个 `Proxy-Authorization` 头，覆写掉已有的通过使用 `header` 设置的自定义 `Proxy-Authorization` 头。
+  proxy: {
+    host: '127.0.0.1',
+    port: 9000,
+    auth: {
+      username: 'mikeymike',
+      password: 'rapunz3l'
+    }
+  },
+
+  // `cancelToken` 指定用于取消请求的 cancel token
+  // （查看后面的 Cancellation 这节了解更多）
+  cancelToken: new CancelToken(function (cancel) {
+  })
+}
+```
+
+### 响应配置
+
+```
+{
+  // `data` 由服务器提供的响应
+  data: {},
+
+  // `status` 来自服务器响应的 HTTP 状态码
+  status: 200,
+
+  // `statusText` 来自服务器响应的 HTTP 状态信息
+  statusText: 'OK',
+
+  // `headers` 服务器响应的头
+  headers: {},
+
+   // `config` 是为请求提供的配置信息
+  config: {},
+ // 'request'
+  // `request` is the request that generated this response
+  // It is the last ClientRequest instance in node.js (in redirects)
+  // and an XMLHttpRequest instance the browser
+  request: {}
+}
+```
+
+使用 `then` 时，你将接收下面这样的响应 :
+
+```
+axios.get('/user/12345')
+  .then(function(response) {
+    console.log(response.data);
+    console.log(response.status);
+    console.log(response.statusText);
+    console.log(response.headers);
+    console.log(response.config);
+  });
+```
+
+### 配置默认值
+
+### 全局默认值
+
+在项目中，很多配置信息都是需要重复输入的，为了减少代码量，我们可以设置全局的默认值。
+
+```javascript
+axios.defaults.baseURL = 'https://api.example.com';  // 配置基础的url，如果在后续的url中不使用根路由，则默认会将url加在此后面
+axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';  // 默认情况下，axios将JavaScript对象序列化为JSON。 要以application/x-www-form-urlencoded格式发送数据
+```
+
+### 自定义默认实例
+
+```javascript
+// Set config defaults when creating the instance
+const instance = axios.create({
+  baseURL: 'https://api.example.com'
+});
+
+// Alter defaults after instance has been created
+instance.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+```
+
+### 拦截器
+
+在请求或响应被 `then` 或 `catch` 处理前拦截它们。
+
+```
+// 添加请求拦截器
+axios.interceptors.request.use(function (config) {
+    // 在发送请求之前做些什么
+    return config;
+  }, function (error) {
+    // 对请求错误做些什么
+    return Promise.reject(error);
+  });
+
+
+// 添加响应拦截器
+axios.interceptors.response.use(function (response) {
+    // 对响应数据做点什么
+    return response;
+  }, function (error) {
+    // 对响应错误做点什么
+    return Promise.reject(error);
+  });
+```
+
+如果你想在稍后移除拦截器，可以这样：
+
+```
+const myInterceptor = axios.interceptors.request.use(function () {/*...*/});
+axios.interceptors.request.eject(myInterceptor);
+```
+
+可以为自定义 axios 实例添加拦截器
+
+```
+const instance = axios.create();
+instance.interceptors.request.use(function () {/*...*/});
+```

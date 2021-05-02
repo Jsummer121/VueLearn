@@ -1371,3 +1371,191 @@ axios.interceptors.request.eject(myInterceptor);
 const instance = axios.create();
 instance.interceptors.request.use(function () {/*...*/});
 ```
+
+## 十九、vuex
+
+>   https://vuex.vuejs.org/zh/
+
+uex 是一个专为 Vue.js 应用程序开发的**状态管理模式**。它采用集中式存储管理应用的所有组件的状态，并以相应的规则保证状态以一种可预测的方式发生变化。
+
+但是你可能会问，什么是状态管理。
+
+### 1.状态管理
+
+这个状态自管理应用包含以下几个部分：
+
+-   **state**，驱动应用的数据源，也就是我们熟知的data；
+-   **view**，以声明方式将 **state** 映射到视图；
+-   **actions**，响应在 **view** 上的用户输入导致的状态变化
+
+以下是一个表示“单向数据流”理念的简单示意
+
+<img src="https://vuex.vuejs.org/flow.png" style="zoom:50%;" />
+
+首先我们定义数据，然后数据在template中进行渲染，当渲染完成以后用户可以通过methods进行交互，当交互后数据会再次发生改变，此时就重新进行渲染。而这样的一个闭环就称为单向数据流
+
+但是，当我们的应用遇到**多个组件共享状态**时，单向数据流的简洁性很容易被破坏：
+
+-   多个视图依赖于同一状态。
+-   来自不同视图的行为需要变更同一状态。
+
+因此，我们可以把组件的共享状态抽取出来，以一个全局单例模式管理。在这种模式下，我们的组件树构成了一个巨大的“视图”，不管在树的哪个位置，任何组件都能获取状态或者触发行为！
+
+通过定义和隔离状态管理中的各种概念并通过强制规则维持视图和状态间的独立性，我们的代码将会变得更结构化且易维护。
+
+### 2.开始
+
+安装完成之后，来到store文件夹下的index.js，我们可以给出一个全局的state和mutauions。
+
+```javascript
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+// 创建整个项目的数据对象，将多组件共用的数据放置此对象里
+export default new Vuex.Store({
+  // data
+  state: {
+    number: 0
+  },
+  // methods
+  mutations: {
+    increment (state) {
+      state.number++
+    }
+  },
+  // 异步方法
+  actions: {
+  },
+  // 模块
+  modules: {
+  }
+})
+```
+
+然后进入main.js进行store的注册
+
+```javascript
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+
+Vue.config.productionTip = false
+
+// 实例app对象中配置store对象
+new Vue({
+  router,
+  store,
+  render: h => h(App)
+}).$mount('#app')
+```
+
+最后，进入需要使用该变量的组件，然后使用即可。
+
+```vue
+<template>
+  <div class="home">
+<!--    对于整个项目来说的局部变量-->
+    <h1>点击数量：{{count}}</h1>
+    <button @click="addEvent">添加</button>
+
+    <hr>
+<!--    vuex的方式-->
+    <h1>点击数量：{{$store.state.number}}</h1>
+    <button @click="emitAction">添加</button>
+  </div>
+</template>
+
+<script>
+
+export default {
+  name: 'Home',
+  data(){
+    return{
+      count: 0
+    }
+  },
+  methods: {
+    addEvent: function () {
+      this.count++
+    },
+    emitAction:function () {
+      this.$store.commit('addNum')
+    }
+  }
+}
+</script>
+```
+
+### 3. 核心
+
+vuex的核心在于5个钩子
+
+-   state
+-   getters
+-   mutations
+-   actions
+-   modules
+
+#### State
+
+获取方式：
+
+-   通过this获取：`this.$store.state.msg`
+
+-   通过映射方式获取：`computed: mapState(['msg','age','number']),`
+
+-   通过对象方式获取：
+
+    -   ```
+        computed: mapState({
+          msg: 'msg',
+          age: 'age',
+          number:(state)=>{
+            return state.number
+          },
+          // 注意，这里如果向使用this就不能使用箭头函数，而得使用一个有名函数
+          greenMsg(state){
+            return this.color + state.msg
+          }
+        })
+        ```
+
+-   对象展开：
+
+    -   ```
+        computed: {
+          reverse: function() {
+            return this.color.split('').reverse().join('')
+          },
+          // 使用对象展开运算符将此对象混入到外部对象中
+          ...mapState({
+            msg:'msg',
+            age:'age',
+            number:'number',
+            greenMsg(state){
+              return this.color + state.msg
+            }
+          })
+        }
+        ```
+
+#### Getters
+
+这个方法类似于计算属性，因此不过多讲，思路就是在store中写好参数之后，通过上面的四种方法进行调用
+
+#### Mutations
+
+mutations类似于methods方法，但是这个方法是同步的，如果想异步则需要使用下一个方法。调用方式同上，但是不是在computed中分发，而是去methods中
+
+#### Actions
+
+异步操作都将放在这里，调用和分发方法与上面的mutations一样
+
+#### Module
+
+当一个项目过大时，如果使用同一套代码就会非常庞大，因此看了一使用module进行拆分，这样可以将代码逐渐简化。
+
+需要注意的地方：命名空间。如果使用不使用命名空间，则module中的参数和方法都是全局的，如果使用命名空间，则需要在调用之前添加上module的名字。
